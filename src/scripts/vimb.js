@@ -4,10 +4,7 @@ var Vimb = {};
 Vimb.applyFocusChangeObservers = (pageId, serializer) => {
     let doc         = document;
     let changeFocus = () => {
-        /* Do not concern about focus changes on body element. It seems */
-        /* that this will fire some blur events on switching from one */
-        /* input to another within iframes. */
-        if (doc.activeElement && !(doc.activeElement instanceof HTMLBodyElement)) {
+        if (doc.activeElement) {
             window.webkit.messageHandlers.focus.postMessage(
                 serializer(pageId, Vimb.isElementEditable(doc.activeElement))
             );
