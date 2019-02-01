@@ -1,9 +1,9 @@
 /* This script is injected into all frames. */
 var Vimb = {};
 
-Vimb.applyFocusChangeObservers = function(pageId, serializer) {
+Vimb.applyFocusChangeObservers = (pageId, serializer) => {
     let doc         = document;
-    let changeFocus = function() {
+    let changeFocus = () => {
         /* Do not concern about focus changes on body element. It seems */
         /* that this will fire some blur events on switching from one */
         /* input to another within iframes. */
@@ -20,14 +20,14 @@ Vimb.applyFocusChangeObservers = function(pageId, serializer) {
     doc.addEventListener('blur', changeFocus, true);
 };
 
-Vimb.isElementEditable = function(e) {
+Vimb.isElementEditable = (e) => {
     let name = e.tagName.toLowerCase();
     return name === "textarea"
         || (name === "input" && /^(?:text|email|number|search|tel|url|password)$/i.test(e.type))
         || "true" === e.contentEditable;
 };
 
-Vimb.focusInput = function() {
+Vimb.focusInput = () => {
     let i, e, expr = "//textarea|//input[not(@type)" +
         " or translate(@type,'ETX','etx')='text'" +
         " or translate(@type,'ADOPRSW','adoprsw')='password'" +

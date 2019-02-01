@@ -1,10 +1,10 @@
 /* This script is injected only into toplevel frame. */
 var VimbToplevel = {};
 
-VimbToplevel.applyScrollObservers = function(pageId, serializer) {
+VimbToplevel.applyScrollObservers = (pageId, serializer) => {
     let doc = document;
 
-    let onScroll = function() {
+    let onScroll = () => {
         let body    = doc.body,
             de      = doc.documentElement,
             percent = 0,
