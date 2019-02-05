@@ -59,7 +59,7 @@ static void mode_free(Mode *mode);
 static void on_textbuffer_changed(GtkTextBuffer *textbuffer, gpointer user_data);
 static void on_webctx_download_started(WebKitWebContext *webctx,
         WebKitDownload *download, Client *c);
-static void on_webctx_init_web_extension(WebKitWebContext *webctx, gpointer data);
+static void on_webctx_init_web_extension(WebKitWebContext *webctx, gpointer user_data);
 static gboolean on_webdownload_decide_destination(WebKitDownload *download,
         gchar *suggested_filename, Client *c);
 static void on_webdownload_failed(WebKitDownload *download,
@@ -1043,10 +1043,12 @@ static void on_webctx_download_started(WebKitWebContext *webctx,
 /**
  * Callback for the web contexts initialize-web-extensions signal.
  */
-static void on_webctx_init_web_extension(WebKitWebContext *webctx, gpointer data)
+static void on_webctx_init_web_extension(WebKitWebContext *webctx, gpointer user_data)
 {
     const char *name;
     GVariant *vdata;
+
+    vb.guid = g_dbus_generate_guid();
 
 #if (CHECK_WEBEXTENSION_ON_STARTUP)
     char *extension = g_build_filename(EXTENSIONDIR,  "webext_main.so", NULL);
@@ -1056,8 +1058,8 @@ static void on_webctx_init_web_extension(WebKitWebContext *webctx, gpointer data
     g_free(extension);
 #endif
 
-    name  = ext_proxy_init();
-    vdata = g_variant_new("(ms)", name);
+    name  = ext_proxy_init(vb.guid);
+    vdata = g_variant_new("(sms)", vb.guid, name);
     webkit_web_context_set_web_extensions_initialization_user_data(webctx, vdata);
 
     /* Setup the extension directory. */
@@ -1842,10 +1844,10 @@ static WebKitWebView *webview_new(Client *c, WebKitWebView *webview)
     g_signal_connect(webcontext, "download-started", G_CALLBACK(on_webctx_download_started), c);
 
     /* Setup script message handlers. */
-    webkit_user_content_manager_register_script_message_handler(ucm, "focus");
+    webkit_user_content_manager_register_script_message_handler_in_world(ucm, "focus", vb.guid);
     g_signal_connect(ucm, "script-message-received::focus", G_CALLBACK(on_script_message_focus), NULL);
 
-    webkit_user_content_manager_register_script_message_handler(ucm, "verticalScroll");
+    webkit_user_content_manager_register_script_message_handler_in_world(ucm, "verticalScroll", vb.guid);
     g_signal_connect(ucm, "script-message-received::verticalScroll", G_CALLBACK(on_script_message_vertical_scroll), NULL);
 
     return new;

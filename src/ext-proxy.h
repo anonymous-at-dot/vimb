@@ -22,7 +22,7 @@
 
 #include "main.h"
 
-const char *ext_proxy_init(void);
+const char *ext_proxy_init(const char *guid);
 void ext_proxy_eval_script(Client *c, char *js, GAsyncReadyCallback callback);
 GVariant *ext_proxy_eval_script_sync(Client *c, char *js);
 void ext_proxy_focus_input(Client *c);

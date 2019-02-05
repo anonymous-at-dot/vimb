@@ -262,6 +262,7 @@ struct Vimb {
     char        *configfile;        /* config file given as option on startup */
     char        *files[FILES_LAST];
     char        *profile;           /* profile name */
+    char        *guid;              /* dbus guid */
     struct {
         guint   history_max;
         guint   closed_max;

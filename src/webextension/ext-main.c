@@ -99,16 +99,17 @@ struct Ext ext = {0};
 G_MODULE_EXPORT
 void webkit_web_extension_initialize_with_user_data(WebKitWebExtension *extension, GVariant *data)
 {
-    char *server_address;
+    const char *server_address;
+    const char *guid;
     GDBusAuthObserver *observer;
 
-    g_variant_get(data, "(m&s)", &server_address);
+    g_variant_get(data, "(&sm&s)", &guid, &server_address);
     if (!server_address) {
         g_warning("UI process did not start D-Bus server");
         return;
     }
 
-    ext.script_world = webkit_script_world_get_default();
+    ext.script_world = webkit_script_world_new_with_name(guid);
 
     g_signal_connect(extension, "page-created", G_CALLBACK(on_page_created), NULL);
     g_signal_connect(ext.script_world, "window-object-cleared",
@@ -275,7 +276,8 @@ static void dbus_handle_method_call(GDBusConnection *conn, const char *sender,
         }
 
         no_result  = !g_strcmp0(method, "EvalJsNoResult");
-        js_context = webkit_frame_get_js_context(webkit_web_page_get_main_frame(page));
+        js_context = webkit_frame_get_js_context_for_script_world(webkit_web_page_get_main_frame(page),
+                ext.script_world);
         js_value   = jsc_context_evaluate(js_context, value, -1);
 
         if (no_result) {
@@ -310,7 +312,8 @@ static void dbus_handle_method_call(GDBusConnection *conn, const char *sender,
             return;
         }
 
-        js_context = webkit_frame_get_js_context(webkit_web_page_get_main_frame(page));
+        js_context = webkit_frame_get_js_context_for_script_world(webkit_web_page_get_main_frame(page),
+                ext.script_world);
         js_vimb    = jsc_context_get_value(js_context, "Vimb");
         js_result  = jsc_value_object_invoke_method(js_vimb, "focusInput",
                 G_TYPE_NONE);
@@ -453,6 +456,9 @@ static void on_window_object_cleared(WebKitScriptWorld *world,
     if (webkit_frame_is_main_frame(frame)) {
         /* Inject the toplevel script. */
         js_result = jsc_context_evaluate(js_context, JS_VIMB_TOPLEVEL, -1);
+        g_object_unref(js_result);
+
+        js_result = jsc_context_evaluate(js_context, JS_HINTS, -1);
         g_object_unref(js_result);
     }
 

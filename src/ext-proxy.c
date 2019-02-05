@@ -51,14 +51,13 @@ static GDBusServer *dbusserver;
 /**
  * Initialize the dbus proxy by watching for appearing dbus name.
  */
-const char *ext_proxy_init(void)
+const char *ext_proxy_init(const char *guid)
 {
-    char *address, *guid;
+    char *address;
     GDBusAuthObserver *observer;
     GError *error = NULL;
 
     address  = g_strdup_printf("unix:tmpdir=%s", g_get_tmp_dir());
-    guid     = g_dbus_generate_guid();
     observer = g_dbus_auth_observer_new();
 
     g_signal_connect(observer, "authorize-authenticated-peer",
@@ -80,7 +79,6 @@ const char *ext_proxy_init(void)
 
 out:
     g_free(address);
-    g_free(guid);
     g_object_unref(observer);
 
     return g_dbus_server_get_client_address(dbusserver);
