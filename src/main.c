@@ -1844,10 +1844,14 @@ static WebKitWebView *webview_new(Client *c, WebKitWebView *webview)
     g_signal_connect(webcontext, "download-started", G_CALLBACK(on_webctx_download_started), c);
 
     /* Setup script message handlers. */
+#if WEBKIT_CHECK_VERSION (2, 22, 0)
     webkit_user_content_manager_register_script_message_handler_in_world(ucm, "focus", vb.guid);
-    g_signal_connect(ucm, "script-message-received::focus", G_CALLBACK(on_script_message_focus), NULL);
-
     webkit_user_content_manager_register_script_message_handler_in_world(ucm, "verticalScroll", vb.guid);
+#else
+    webkit_user_content_manager_register_script_message_handler(ucm, "focus");
+    webkit_user_content_manager_register_script_message_handler(ucm, "verticalScroll");
+#endif
+    g_signal_connect(ucm, "script-message-received::focus", G_CALLBACK(on_script_message_focus), NULL);
     g_signal_connect(ucm, "script-message-received::verticalScroll", G_CALLBACK(on_script_message_vertical_scroll), NULL);
 
     return new;

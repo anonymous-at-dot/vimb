@@ -109,7 +109,11 @@ void webkit_web_extension_initialize_with_user_data(WebKitWebExtension *extensio
         return;
     }
 
+#if WEBKIT_CHECK_VERSION (2, 22, 0)
     ext.script_world = webkit_script_world_new_with_name(guid);
+#else
+    ext.script_world = webkit_script_world_get_default();
+#endif
 
     g_signal_connect(extension, "page-created", G_CALLBACK(on_page_created), NULL);
     g_signal_connect(ext.script_world, "window-object-cleared",
